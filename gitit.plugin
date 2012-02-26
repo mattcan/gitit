@@ -1,0 +1,9 @@
+[Plugin]
+Loader=python
+Module=gitit
+IAge=3
+Name=Gitit
+Description=A Git plugin for Gedit
+Authors=Matthew Cantelon <me@matthewcantelon.ca>
+Copyright=Copyright © 2012 Matthew Cantelon <me@matthewcantelon.ca>
+Website=http://github.com/mattcan/
