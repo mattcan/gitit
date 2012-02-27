@@ -2,20 +2,13 @@
 class Gitit:
     """Controls interaction with git"""
     
-    toolbar_ui_str = """<ui>
-        <toolbar name="ToolBar">
-            <separator/>
-            <toolitem name="GitCommit" action="GitCommit"/>
-            <toolitem name="GitPush" action="GitPush"/>
-        </toolbar>
-    </ui>
-    """
+
 
     def __init__(self, plugin, window):
         self._window = window
         self._plugin = plugin
         
-    def insert_controls(self):
+    def _insert_controls(self):
         # Get the Gtk.UIManager
         manager = self._window.get_ui_manager()
 
@@ -31,7 +24,7 @@ class Gitit:
         # Merge the UI
         self._ui_id = manager.add_ui_from_string(ui_str)
 
-    def remove_controls(self):
+    def _remove_controls(self):
         # Get the Gtk.UIManager
         manager = self._window.get_ui_manager()
 
@@ -44,7 +37,7 @@ class Gitit:
         # Make sure the manager updates
         manager.ensure_update()
         
-    def tab_activation(self):
+    def _tab_activation(self):
         print 'TAB ACTIVATED'
         
     def _git_commit(self):
