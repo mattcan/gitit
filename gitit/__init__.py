@@ -17,10 +17,10 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
     SIG_HANDLER = 'GititPluginHandler'
 
     window = GObject.property(type=Gedit.Window)
-    toolbar_ui_str = """<ui>
+    toolbar_ui_open = """<ui>
         <toolbar name="ToolBar">
-            <separator/>
-            <toolitem name="GitCommit" action="GitCommit"/>
+            <separator/>"""
+    toolbar_ui_close = """
         </toolbar>
     </ui>
     """
@@ -51,22 +51,33 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
         self._remove_controls()
         self._action_group = None
         
-    def _insert_controls(self):
+    def _insert_controls(self, in_repo=True):
         """Insert the controls defined in self.toolbar_ui_string into the toolbar"""
         # Get the Gtk.UIManager
         manager = self.window.get_ui_manager()
 
-        # Create a new action group
+        # Create ActionGroup for repo control items
         self._action_group = Gtk.ActionGroup("GititPluginActions")
-        self._action_group.add_actions([("GitCommit", Gtk.STOCK_APPLY, "Commit",
+        if in_repo:
+            self._action_group.add_actions([("GitCommit", Gtk.STOCK_APPLY, _("Commit"),
                                          None, _("Opens the Git GUI to perform commit."),
                                          self._git_commit)])
+            toolbar_ui_items = """
+            <toolitem name="GitCommit" action="GitCommit"/>"""
+        else:
+            self._action_group.add_actions([("GitInit", Gtk.STOCK_DND, _("Initialize"),
+                                         None, _("Initialize a new repository."),
+                                         self._git_init)])
+            toolbar_ui_items = """
+            <toolitem name="GitInit" action="GitInit"/>"""
 
         # Insert the action group
         manager.insert_action_group(self._action_group, -1)
+        
+        toolbar_ui_str = self.toolbar_ui_open + toolbar_ui_items + self.toolbar_ui_close
 
         # Merge the UI
-        self._ui_id = manager.add_ui_from_string(self.toolbar_ui_str)
+        self._ui_id = manager.add_ui_from_string(toolbar_ui_str)
 
     def _remove_controls(self):
         """Remove the toolbar controls"""
@@ -92,7 +103,9 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
         doc =  tab.get_document()
         uri = self._get_uri(doc)
         
-        if self._check_in_repo(uri):
+        is_in_repo = self._check_in_repo(uri)
+        
+        if is_in_repo:
             # build menu with repo commands
             # show the repo and branch names in statusbar
             pass
