@@ -46,13 +46,15 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
         DEBUG("Deactivating plugin...")
         
         # remove signals
-        self._remove_signals()
+        self._detach_signals()
         # Remove any installed menu items
         self._remove_controls()
         self._action_group = None
         
     def _insert_controls(self, in_repo=True):
         """Insert the controls defined in self.toolbar_ui_string into the toolbar"""
+        DEBUG('Inserting controls..')
+        
         # Get the Gtk.UIManager
         manager = self.window.get_ui_manager()
 
@@ -81,14 +83,16 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
 
     def _remove_controls(self):
         """Remove the toolbar controls"""
+        DEBUG('Removing controls...')
+        
         # Get the Gtk.UIManager
         manager = self.window.get_ui_manager()
 
         # Remove the ui
-        manager.remove_ui(self._ui_id)
+        if self._ui_id: manager.remove_ui(self._ui_id)
 
         # Remove the action group
-        manager.remove_action_group(self._action_group)
+        if self._action_group: manager.remove_action_group(self._action_group)
 
         # Make sure the manager updates
         manager.ensure_update()
@@ -103,16 +107,21 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
         doc =  tab.get_document()
         uri = self._get_uri(doc)
         
+        if uri == '':
+            self._remove_controls()
+            return
+        
         is_in_repo = self._check_in_repo(uri)
         
-        if is_in_repo:
-            # build menu with repo commands
-            # show the repo and branch names in statusbar
-            pass
-        else:
-            # build menu with init command only
-            # clear status bar if we have it
-            pass
+        self._rebuild_controls(is_in_repo)
+        #call a status bar rebuild here
+            
+    def _rebuild_controls(self, in_repo):
+        """Removes and re-adds the controls. Passes whether or not currently in
+        a repo"""
+        DEBUG('Rebuilding controls...')
+        self._remove_controls()
+        self._insert_controls(in_repo)
         
     def _get_uri(self, document):
         """gets the uri of the document and formats it for use"""
@@ -173,4 +182,7 @@ class GititPlugin(GObject.Object, Gedit.WindowActivatable):
             DEBUG('Disconnected handler ' + str(handler_id))
         
     def _git_commit(self):
+        pass
+    
+    def _git_init(self):
         pass
